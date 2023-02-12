@@ -2,7 +2,7 @@ import numpy as np
 import activations
 
 # dense = fully connected
-def dense_player(input,W,b,activation):
+def dense_layer(input,W,b,activation):
     """
     Computes dense layer
     Args:
@@ -22,21 +22,37 @@ def dense_player(input,W,b,activation):
     return out
 
 
-# calculates output for each dense layer, for now using only 3 layers
-def sequential_model(x, W1, b1, W2, b2, W3, b3): 
-    a_out1=dense_player(x,W1,b1,activations.linear)
-    a_out2=dense_player(a_out1,W2,b2,activations.linear)
-    a_out3=dense_player(a_out2,W3,b3,activations.sigmoid)
-    return a_out3
+# calculates output for each dense layer
+def sequential_model(x, all_W, all_B, n_layers): 
+    """
+    Args:
+        x (ndarray (n, ))
+        all_W (array of ndarrays (n, )) : A list of all weights
+        all_B (array of ndarrays (n, )) : A list of all biases
+        n_layers (int) : Number of layers in NN
+    """
 
+    for i in range(n_layers):
+        if i != n_layers-1:
+            act = activations.linear
+        else:
+            act = activations.sigmoid
 
-# random data
-x=np.random.rand(3) # sample with two features
-W1=np.random.rand(3,6) # layer with 6 neurons
-b1=np.random.rand(6)
-W2=np.random.rand(6,4) # layer with 4 neurons
-b2=np.random.rand(4)
-W3=np.random.rand(4,1) # layer with single neuron
-b3=np.random.rand(1)
+        x = dense_layer(x,all_W[i],all_B[i],act)
+    
+    return x 
 
-print(sequential_model(x, W1, b1, W2, b2, W3, b3))
+if __name__ == '__main__':
+    # random data
+
+    n_layers = 3 # 3 layers for testing
+
+    x=np.random.rand(3) # sample with two features
+    W1=np.random.rand(3,6) # layer with 6 neurons
+    b1=np.random.rand(6)
+    W2=np.random.rand(6,4) # layer with 4 neurons
+    b2=np.random.rand(4)
+    W3=np.random.rand(4,1) # layer with single neuron
+    b3=np.random.rand(1)
+
+    print(sequential_model(x, [W1, W2, W3], [b1, b2, b3], n_layers))
