@@ -9,7 +9,7 @@ def cross_entropy(yHat, y):
 
     Args:
         yHat (ndarray (n,)) : estimations
-        y (ndarray (n,)) : real values
+        y (ndarray (n,)) : target values
     '''
     loss = -np.sum(y*np.log(yHat))
-    return loss / float(y_pre.shape[0]) #normalize loss over samples 
+    return loss / float(yHat.shape[0]) #normalize loss over samples 
