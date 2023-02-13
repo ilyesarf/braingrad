@@ -1,5 +1,5 @@
 
-name: Go
+name: Unit Testing
 
 on: [push, pull_request]
 
