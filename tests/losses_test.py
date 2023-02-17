@@ -23,3 +23,13 @@ def test_mean_squared_error():
 
     assert mse_1 < mse_2
 
+def test_mean_absoulte_error():
+    y = np.array([1,2,5])
+    yHat_1 = np.array([0.7, 1.8, 5.3])
+    yHat_2 = np.array([0.3, 1, 4.5])
+
+    mse_1 = mean_absolute_error(yHat_1, y)
+    mse_2 = mean_absolute_error(yHat_2, y)
+
+    assert mse_1 < mse_2
+
