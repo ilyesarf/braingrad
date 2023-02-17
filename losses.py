@@ -18,7 +18,7 @@ def mean_squared_error(yHat, y):
     '''
     Calculates the mean squared error
 
-    Formula: MSE(yHat, y) = 1/N * Σ[i=1; N] (y,i - yHat,i) 
+    Formula: MSE(yHat, y) = 1/N * Σ[i=1; N] (y,i - yHat,i)^2 
 
     Args:
         yHat (ndarray (n,)) : estimations
@@ -26,3 +26,14 @@ def mean_squared_error(yHat, y):
     '''
     return np.square(np.subtract(y, yHat)).mean()
 
+def mean_absolute_error(yHat, y):
+    '''
+    Calculates the mean absolute error
+    
+    Formula: MAE(yHat, y) = 1/N * Σ[i=1; N] |y,i - yHat,i|
+    
+    Args:
+        yHat (ndarray (n,)) : estimations
+        y (ndarray (n,)) : target values
+    '''
+    return np.abs(np.subtract(y, yHat)).mean()
