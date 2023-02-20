@@ -36,6 +36,25 @@ class Tensor():
 		out._backward=_backward
 
 		return out
+	
+	def __sub__(self,other):
+		"""
+		subtracts two tensors
+		Args:
+			self (Tensor)
+			other (Tensor)
+		Returns
+			out (Tensor)  : out.data=self.data-other.data
+		"""
+		other = other if isinstance(other, Tensor) else Tensor(other)
+		out = Tensor(self.data-other.data, (self,other), '-')
+		def _backward():
+			self.grad+= 1.0*out.grad # chain rule
+			other.grad+= 1.0*out.grad
+		out._backward=_backward
+
+		return out
+
 
 	def __mul__(self,other):
 		"""
@@ -95,5 +114,3 @@ if __name__ == "__main__":
 
 # L=d*f => dL/dd= f  ;  X=y+b => dX/dy=1.0
 # chain rule: dz/dx=dz/dy*dy/dx
-
-#TODO: refactor this
