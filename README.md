@@ -1,6 +1,6 @@
-# NanoGrad
+# braingrad
 
-Essentially, Nanograd is a lightweight deep learning library.
+Essentially, braingrad is a lightweight deep learning library.
 
 We aim to implement as many features as possible to make it capable of training basic neural network tasks.
 
