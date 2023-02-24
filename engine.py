@@ -54,6 +54,19 @@ class Tensor():
 		out._backward=_backward
 
 		return out
+	
+	def __pow__(self, other):
+
+		#other = other if isinstance(other, Tensor) else Tensor(other)
+		assert isinstance(other, (int, float)), "power should be int or float"
+		out = Tensor(self.data**other, (self,), f'**{other}')		
+
+		def _backward():
+			self.grad +=  (other * self.data**(other-1)) * out.grad
+		out._backward = _backward
+
+		return out
+
 
 	def tanh(self):
 		x=self.data
