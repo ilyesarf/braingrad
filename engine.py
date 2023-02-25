@@ -1,5 +1,4 @@
 import numpy as np
-import math
 
 class Tensor():
 	def __init__(self,data,_children=(), _op=''): 
@@ -56,6 +55,14 @@ class Tensor():
 		return out
 	
 	def __pow__(self, other):
+		"""
+		raises tensor to an int/float power (tensor coming soon)
+		Args:
+			self (Tensor)
+			other (int or float)
+		Returns:
+			out (Tensor)  : out.data=self.data**other
+		"""
 
 		#other = other if isinstance(other, Tensor) else Tensor(other)
 		assert isinstance(other, (int, float)), "power should be int or float"
@@ -118,9 +125,9 @@ class Tensor():
 		return other * self**-1
 
 if __name__ == "__main__":
-    x=Tensor(1)
-    y=Tensor(0.6)
-    d=(y-x)
+    x=Tensor(2)
+    y=Tensor(3)
+    d=(y**int(x.data))
 
     d.backward()
     print(d)
