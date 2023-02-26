@@ -18,6 +18,7 @@ class Tensor():
 	def __repr__(self): 
 		return f"Tensor({self.data}, {self.grad})"
 
+	# ops
 	def __add__(self,other):
 		"""
 		adds two tensors
@@ -74,7 +75,15 @@ class Tensor():
 
 		return out
 
+	def square(self):
+		return self.__pow__(2)
+	
+	def log(self):
+		return
 
+	def mean(self):
+		return np.sum(self.data) / self.shape[0]
+	
 	def tanh(self):
 		x=self.data
 		t=(np.exp(2*x)-1)/(np.exp(2*x)+1)
