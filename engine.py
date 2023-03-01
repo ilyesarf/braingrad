@@ -149,6 +149,7 @@ if __name__ == "__main__":
 	print(f'x grad: \n{x.grad}\n')  # dz/dx
 	print(f'y grad: \n{y.grad}')  # dz/dy
 
-
+	#grads aren't the same as torch
+	
 # L=d*f => dL/dd= f  ;  X=y+b => dX/dy=1.0
 # chain rule: dz/dx=dz/dy*dy/dx
