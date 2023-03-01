@@ -84,6 +84,9 @@ class Tensor():
 	def mean(self):
 		return np.sum(self.data) / self.shape[0]
 	
+	def sum(self):
+		return Tensor(np.sum(self.data), (self,))
+	
 	def tanh(self):
 		x=self.data
 		t=(np.exp(2*x)-1)/(np.exp(2*x)+1)
@@ -134,14 +137,18 @@ class Tensor():
 		return other * self**-1
 
 if __name__ == "__main__":
-    x=Tensor(2)
-    y=Tensor(3)
-    d=(y**int(x.data))
+	x = Tensor(np.eye(3))	
+	print(f'x data: \n{x.data}\n')
+	y = Tensor([[2.0,0,-2.0]])
+	print(f'y data: \n{y.data}\n')
+	print(y*x)
+	z = (y*x).sum()
+	print(f'z data: \n{z.data}\n')
+	z.backward()
 
-    d.backward()
-    print(d)
-    print(x)
-    print(y)
+	print(f'x grad: \n{x.grad}\n')  # dz/dx
+	print(f'y grad: \n{y.grad}')  # dz/dy
+
 
 # L=d*f => dL/dd= f  ;  X=y+b => dX/dy=1.0
 # chain rule: dz/dx=dz/dy*dy/dx
