@@ -18,7 +18,7 @@ class Tensor():
 	def __repr__(self): 
 		return f"Tensor({self.data}, {self.grad})"
 
-	# ops
+	# main ops
 	def __add__(self,other):
 		"""
 		adds two tensors
@@ -75,46 +75,7 @@ class Tensor():
 
 		return out
 
-	def square(self):
-		return self.__pow__(2)
-	
-	def log(self):
-		return
-
-	def mean(self):
-		return np.sum(self.data) / self.shape[0]
-	
-	def sum(self):
-		return Tensor(np.sum(self.data), (self,))
-	
-	def tanh(self):
-		x=self.data
-		t=(np.exp(2*x)-1)/(np.exp(2*x)+1)
-		out=Tensor(t,(self,), 'tanh')
-		def _backward():
-			self.grad+=(1-t**2)*out.grad  # tanh' = 1/cosh^2= 1-tanh^2
-		out._backward=_backward
-
-		return out
-	
-	def backward(self):
-
-		# topological order all of the children in the graph
-		topo = []
-		visited = set()
-		def build_topo(v):
-			if v not in visited:
-				visited.add(v)
-				for child in v._prev:
-					build_topo(child)
-				topo.append(v)
-		build_topo(self)
-
-		# go one variable at a time and apply the chain rule to get its gradient
-		self.grad = 1
-		for v in reversed(topo):
-			v._backward()
-
+	# sub-ops
 	def __neg__(self): # -self
 		return self * -1
 
@@ -135,13 +96,46 @@ class Tensor():
 
 	def __rtruediv__(self, other): # other / self
 		return other * self**-1
+	
+	# some wrappers and complementary ops
+	def square(self):
+		return self.__pow__(2)
+	
+	def log(self):
+		return
+
+	def mean(self):
+		return self.data.sum() / self.shape[0]
+	
+	def sum(self):
+		return Tensor(np.sum(self.data), (self,))
+	
+
+	#backward
+	def backward(self):
+
+		# topological order all of the children in the graph
+		topo = []
+		visited = set()
+		def build_topo(v):
+			if v not in visited:
+				visited.add(v)
+				for child in v._prev:
+					build_topo(child)
+				topo.append(v)
+		build_topo(self)
+
+		# go one variable at a time and apply the chain rule to get its gradient
+		self.grad = 1
+		for v in reversed(topo):
+			v._backward()
 
 if __name__ == "__main__":
 	x = Tensor(np.eye(3))	
 	print(f'x data: \n{x.data}\n')
 	y = Tensor([[2.0,0,-2.0]])
 	print(f'y data: \n{y.data}\n')
-	print(y*x)
+	print((y*x).data)
 	z = (y*x).sum()
 	print(f'z data: \n{z.data}\n')
 	z.backward()
@@ -150,6 +144,6 @@ if __name__ == "__main__":
 	print(f'y grad: \n{y.grad}')  # dz/dy
 
 	#grads aren't the same as torch
-	
+
 # L=d*f => dL/dd= f  ;  X=y+b => dX/dy=1.0
 # chain rule: dz/dx=dz/dy*dy/dx
