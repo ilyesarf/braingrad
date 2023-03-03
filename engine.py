@@ -47,10 +47,20 @@ class Tensor():
 			out (Tensor)  : out.data=self.data*other.data
 		"""
 		other = other if isinstance(other, Tensor) else Tensor(other)
-		out = Tensor(self.data*other.data, (self,other), '*')
+		if self.shape[0] != other.shape[0] and self.shape[0] == other.data.T.shape[0]:
+			x = self.data
+			y = other.data.T
+		else:
+			x = self.data
+			y = other.data
+
+		out = Tensor(x.dot(y), (self,other), '*')
 		def _backward():
-			self.grad+=other.data*out.grad
-			other.grad+=self.data*out.grad
+			self.grad+=out.grad.dot(y.T)
+			other.grad+=out.grad.T.dot(x).T
+			if other.grad.shape != other.shape:
+				other.grad = other.grad.T
+			
 		out._backward=_backward
 
 		return out
@@ -108,7 +118,12 @@ class Tensor():
 		return self.data.sum() / self.shape[0]
 	
 	def sum(self):
-		return Tensor(np.sum(self.data), (self,))
+		out = Tensor(np.sum(self.data), (self,))
+		def _backward():
+			self.grad = np.ones_like(self.data)
+		out._backward = _backward
+
+		return out
 	
 
 	#backward
@@ -124,26 +139,23 @@ class Tensor():
 					build_topo(child)
 				topo.append(v)
 		build_topo(self)
-
 		# go one variable at a time and apply the chain rule to get its gradient
-		self.grad = 1
+		#self.grad = 1
 		for v in reversed(topo):
 			v._backward()
 
 if __name__ == "__main__":
 	x = Tensor(np.eye(3))	
 	print(f'x data: \n{x.data}\n')
-	y = Tensor([[2.0,0,-2.0]])
+	y = Tensor(np.array([[2.0, 0, -2.0]]))
 	print(f'y data: \n{y.data}\n')
-	print((y*x).data)
+
 	z = (y*x).sum()
 	print(f'z data: \n{z.data}\n')
 	z.backward()
 
 	print(f'x grad: \n{x.grad}\n')  # dz/dx
 	print(f'y grad: \n{y.grad}')  # dz/dy
-
-	#grads aren't the same as torch
 
 # L=d*f => dL/dd= f  ;  X=y+b => dX/dy=1.0
 # chain rule: dz/dx=dz/dy*dy/dx
