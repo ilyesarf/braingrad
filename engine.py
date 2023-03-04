@@ -115,7 +115,12 @@ class Tensor():
 		return
 
 	def mean(self):
-		return self.data.sum() / self.shape[0]
+		out = Tensor(self.data.mean(), (self,))
+		def _backward():
+			self.grad = np.full_like(self.data, 1/self.data.size)
+		out._backward = _backward
+
+		return out
 	
 	def sum(self):
 		out = Tensor(np.sum(self.data), (self,))
@@ -149,8 +154,10 @@ if __name__ == "__main__":
 	print(f'x data: \n{x.data}\n')
 	y = Tensor(np.array([[2.0, 0, -2.0]]))
 	print(f'y data: \n{y.data}\n')
-
-	z = (y*x).sum()
+	
+	m = y*x
+	print(f'm data: \n{m.data}]\n')
+	z = m.mean()
 	print(f'z data: \n{z.data}\n')
 	z.backward()
 
