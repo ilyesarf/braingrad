@@ -3,7 +3,7 @@ import numpy as np
 class Tensor():
 	def __init__(self,data,_children=(), _op=''): 
 		if type(data).__module__ != np.__name__: # check if data is a numpy array
-			data=np.array(data)
+			data=np.array(data, dtype=np.float32)
 
 		self.data=data
 		self.shape = self.data.shape
@@ -112,7 +112,12 @@ class Tensor():
 		return self.__pow__(2)
 	
 	def log(self):
-		return
+		out = Tensor(np.log(self.data), (self,))
+		def _backward():
+			self.grad = 1/self.data
+		out._backward = _backward
+
+		return out
 
 	def mean(self):
 		out = Tensor(self.data.mean(), (self,))
@@ -133,7 +138,7 @@ class Tensor():
 
 	#backward
 	def backward(self):
-
+		assert len(self.shape) == 0, "grad can only be created for scalar outputs"
 		# topological order all of the children in the graph
 		topo = []
 		visited = set()
@@ -152,12 +157,12 @@ class Tensor():
 if __name__ == "__main__":
 	x = Tensor(np.eye(3))	
 	print(f'x data: \n{x.data}\n')
-	y = Tensor(np.array([[2.0, 0, -2.0]]))
+	y = Tensor([[2, 0, -2]])
 	print(f'y data: \n{y.data}\n')
 	
 	m = y*x
 	print(f'm data: \n{m.data}]\n')
-	z = m.mean()
+	z = m.log().sum()
 	print(f'z data: \n{z.data}\n')
 	z.backward()
 
