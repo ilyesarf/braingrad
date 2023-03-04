@@ -3,6 +3,8 @@ import numpy as np
 class Tensor():
 	def __init__(self,data,_children=(), _op=''): 
 		if type(data).__module__ != np.__name__: # check if data is a numpy array
+			if isinstance(data, (int, float)):
+				data = [data]
 			data=np.array(data, dtype=np.float32)
 
 		self.data=data
@@ -47,20 +49,33 @@ class Tensor():
 			out (Tensor)  : out.data=self.data*other.data
 		"""
 		other = other if isinstance(other, Tensor) else Tensor(other)
+
+		#assert len(self.shape) == len(other.shape), "can't multiply two tensors with different dimensions"
 		if self.shape[0] != other.shape[0] and self.shape[0] == other.data.T.shape[0]:
 			x = self.data
 			y = other.data.T
 		else:
 			x = self.data
 			y = other.data
+		
+		if any(len(i) < 2 for i in (x.shape, y.shape)): #checks if there's a scalar
+			out = Tensor(x*y, (self,other), '*')
+			def _backward():
+				self.grad+=out.grad*y
+				other.grad+=(out.grad.T*x).T
+				if other.grad.shape != other.shape:
+					other.grad = other.grad.T
+		else:
+			out = Tensor(x.dot(y), (self,other), '*')
 
-		out = Tensor(x.dot(y), (self,other), '*')
-		def _backward():
-			self.grad+=out.grad.dot(y.T)
-			other.grad+=out.grad.T.dot(x).T
-			if other.grad.shape != other.shape:
-				other.grad = other.grad.T
-			
+			def _backward():
+				self.grad+=out.grad.dot(y)
+				#if self.grad.shape != self.shape:
+				#	self.grad = np.reshape(self.grad, self.shape)
+				other.grad+=out.grad.T.dot(x).T
+				if other.grad.shape != other.shape:
+					other.grad = other.grad.T
+				
 		out._backward=_backward
 
 		return out
@@ -150,19 +165,18 @@ class Tensor():
 				topo.append(v)
 		build_topo(self)
 		# go one variable at a time and apply the chain rule to get its gradient
-		#self.grad = 1
 		for v in reversed(topo):
 			v._backward()
 
 if __name__ == "__main__":
-	x = Tensor(np.eye(3))	
+	x = Tensor(np.eye(3))
 	print(f'x data: \n{x.data}\n')
 	y = Tensor([[2, 0, -2]])
 	print(f'y data: \n{y.data}\n')
-	
+
 	m = y*x
 	print(f'm data: \n{m.data}]\n')
-	z = m.log().sum()
+	z = m.sum()
 	print(f'z data: \n{z.data}\n')
 	z.backward()
 
