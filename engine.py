@@ -51,7 +51,6 @@ class Tensor():
 		"""
 		other = other if isinstance(other, Tensor) else Tensor(other)
 
-		#assert len(self.shape) == len(other.shape), "can't multiply two tensors with different dimensions"
 		if self.shape[0] != other.shape[0] and self.shape[0] == other.data.T.shape[0]:
 			x = self.data
 			y = other.data.T
@@ -130,7 +129,7 @@ class Tensor():
 	############ complementary ops ############
 
 	def log(self):
-		out = Tensor(np.log(self.data), (self,))
+		out = Tensor(np.log(self.data), (self,), 'log')
 		def _backward():
 			self.grad = 1/self.data
 		out._backward = _backward
@@ -138,7 +137,7 @@ class Tensor():
 		return out
 
 	def mean(self):
-		out = Tensor(self.data.mean(), (self,))
+		out = Tensor(self.data.mean(), (self,), 'mean')
 		def _backward():
 			self.grad = np.full_like(self.data, 1/self.data.size)
 		out._backward = _backward
@@ -146,7 +145,7 @@ class Tensor():
 		return out
 	
 	def sum(self):
-		out = Tensor(np.sum(self.data), (self,))
+		out = Tensor(np.sum(self.data), (self,), 'sum')
 		def _backward():
 			self.grad = np.ones_like(self.data)
 		out._backward = _backward
@@ -156,13 +155,45 @@ class Tensor():
 	############ activations ############
 	
 	def relu(self):
-		out = Tensor(np.maximum(0, self.data), (self,))
+		out = Tensor(np.maximum(0, self.data), (self,), 'relu')
 		def _backward():
-			self.grad = 1*(out.data<=0)
+			self.grad += 1*(out.data<=0)
 		out._backward = _backward
 
 		return out
 
+	def sigmoid(self):
+		def _sigmoid(x):
+			return 1/(1+np.exp(-x))
+		out = Tensor(_sigmoid(self.data), (self,), 'sigmoid')
+		
+		def _backward():
+			self.grad += out.data * (1-out.data)
+		out._backward = _backward
+
+		return out
+	
+	def softmax(self):
+		def _softmax(x):
+			return np.exp(x)/np.sum(np.exp(x))
+		out = Tensor(_softmax(self.data), (self,), 'sigmoid')
+
+		def _backward():
+			return
+
+		return out
+	
+	def tanh(self):
+		def _tanh(x):
+			return np.exp(2*x)-1/(np.exp(2*x)+1)
+		out=Tensor(_tanh(self.data),(self,), 'tanh')
+
+		def _backward():
+			self.grad+=(1-out.data**2)*out.grad  # tanh' = 1/cosh^2= 1-tanh^2
+		out._backward=_backward
+
+		return out
+	
 	#backward
 	def backward(self):
 		assert len(self.shape) == 0, "grad can only be created for scalar outputs"
@@ -185,7 +216,7 @@ if __name__ == "__main__":
 	print(f'x data: \n{x.data}\n')
 	y = Tensor([[2, 0, -2]])
 	print(f'y data: \n{y.data}\n')
-
+	
 	m = y*x
 	print(f'm data: \n{m.data}]\n')
 	z = m.sum()
