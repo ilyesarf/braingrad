@@ -18,9 +18,10 @@ class Tensor():
 		self._op=_op
 
 	def __repr__(self): 
-		return f"Tensor({self.data}, {self.grad})"
+		return f"Tensor({self.data}, grad={self.grad})"
 
-	# main ops
+	############ main ops ############
+	
 	def __add__(self,other):
 		"""
 		adds two tensors
@@ -100,7 +101,8 @@ class Tensor():
 
 		return out
 
-	# sub-ops
+	############ sub-ops ############
+	
 	def __neg__(self): # -self
 		return self * -1
 
@@ -122,10 +124,11 @@ class Tensor():
 	def __rtruediv__(self, other): # other / self
 		return other * self**-1
 	
-	# some wrappers and complementary ops
 	def square(self):
 		return self.__pow__(2)
 	
+	############ complementary ops ############
+
 	def log(self):
 		out = Tensor(np.log(self.data), (self,))
 		def _backward():
@@ -150,6 +153,15 @@ class Tensor():
 
 		return out
 	
+	############ activations ############
+	
+	def relu(self):
+		out = Tensor(np.maximum(0, self.data), (self,))
+		def _backward():
+			self.grad = 1*(out.data<=0)
+		out._backward = _backward
+
+		return out
 
 	#backward
 	def backward(self):
