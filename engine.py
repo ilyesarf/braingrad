@@ -54,9 +54,10 @@ class Tensor():
 
 		def _backward():
 			self.grad+=out.grad.dot(y.T)
-			other.grad+=out.grad.T.dot(x).T
-			if other.grad.shape != other.shape:
-				other.grad = other.grad.T
+			y_grad = out.grad.T.dot(x).T
+			if y_grad.shape != other.shape:
+				y_grad = y_grad.T
+			other.grad += y_grad
 		out._backward = _backward
 
 		return out
@@ -177,13 +178,16 @@ class Tensor():
 
 		return out
 	
-	def softmax(self):
-		def _softmax(x):
-			return np.exp(x)/np.sum(np.exp(x))
-		out = Tensor(_softmax(self.data), (self,), 'sigmoid')
+	def logsoftmax(self):
+		def _logsoftmax(x):
+			exp_x = np.exp(x - np.max(x))
+			return np.log(exp_x / exp_x.sum())
+		
+		out = Tensor(_logsoftmax(self.data), (self,), 'softmax')
 
 		def _backward():
-			return
+			self.grad += out.grad - np.exp(out.data)*out.grad.sum(axis=1).reshape((-1, 1))
+		out._backward = _backward
 
 		return out
 	
@@ -215,20 +219,4 @@ class Tensor():
 		for v in reversed(topo):
 			v._backward()
 
-if __name__ == "__main__":
-	x = Tensor(np.eye(3))
-	print(f'x data: \n{x.data}\n')
-	y = Tensor([[2, 0, -2]])
-	print(f'y data: \n{y.data}\n')
-	
-	m = x.dot(y)
-	print(f'm data: \n{m.data}]\n')
-	z = m.sum()
-	print(f'z data: \n{z.data}\n')
-	z.backward()
 
-	print(f'x grad: \n{x.grad}\n')  # dz/dx
-	print(f'y grad: \n{y.grad}')  # dz/dy
-
-# L=d*f => dL/dd= f  ;  X=y+b => dX/dy=1.0
-# chain rule: dz/dx=dz/dy*dy/dx
