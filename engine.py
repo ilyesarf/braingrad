@@ -74,7 +74,6 @@ class Tensor():
 		other = other if isinstance(other, Tensor) else Tensor(other)		
 		
 		if any(len(i) < 2 for i in (self.shape, other.shape)): #checks if there's a scalar
-			print("Yo")
 			out = Tensor(self.data*other.data, (self,other), '*')
 			def _backward():
 				self.grad+=out.grad*other.data
@@ -154,6 +153,14 @@ class Tensor():
 		def _backward():
 			self.grad = np.ones_like(self.data)
 		out._backward = _backward
+
+		return out
+	
+	def abs(self):
+		out = Tensor(np.abs(self.data), (self,), 'abs')
+		def _backward():
+			self.grad = np.sign(out.data)
+		out._backward = _backward()
 
 		return out
 	
