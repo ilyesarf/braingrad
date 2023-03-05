@@ -16,7 +16,24 @@ jobs:
         python-version: 3.8
 
     - name: Install Dependencies
-      run: pip install -r requirements.txt
+      run: pip install numpy pytest
       
     - name: Run Pytest
-      run: cd tests/ && pytest -v
+      run: cd tests/ && pytest -v losses_test.py
+
+  tensor:
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@v3
+
+    - name: Install Python3
+      uses: actions/setup-python@v4
+      with:
+        python-version: 3.8
+
+    - name: Install Dependencies
+      run: pip install -r requirements.txt 
+      
+    - name: Run Pytest
+      run: cd tests/ && pytest -v tensor_test.py
+
