@@ -39,7 +39,28 @@ class Tensor():
 		out._backward=_backward
 
 		return out
+	
+	def dot(self, other):
+		other = other if isinstance(other, Tensor) else Tensor(other)		
 
+		if self.shape[0] != other.shape[0] and self.shape[0] == other.data.T.shape[0]:
+			x = self.data
+			y = other.data.T
+		else:
+			x = self.data
+			y = other.data
+
+		out = Tensor(x.dot(y), (self,other), '*')
+
+		def _backward():
+			self.grad+=out.grad.dot(y.T)
+			other.grad+=out.grad.T.dot(x).T
+			if other.grad.shape != other.shape:
+				other.grad = other.grad.T
+		out._backward = _backward
+
+		return out
+	
 	def __mul__(self,other):
 		"""
 		multiplies two tensors
@@ -49,35 +70,18 @@ class Tensor():
 		Returns
 			out (Tensor)  : out.data=self.data*other.data
 		"""
-		other = other if isinstance(other, Tensor) else Tensor(other)
-
-		if self.shape[0] != other.shape[0] and self.shape[0] == other.data.T.shape[0]:
-			x = self.data
-			y = other.data.T
-		else:
-			x = self.data
-			y = other.data
+		other = other if isinstance(other, Tensor) else Tensor(other)		
 		
-		if any(len(i) < 2 for i in (x.shape, y.shape)): #checks if there's a scalar
-			out = Tensor(x*y, (self,other), '*')
+		if any(len(i) < 2 for i in (self.shape, other.shape)): #checks if there's a scalar
+			print("Yo")
+			out = Tensor(self.data*other.data, (self,other), '*')
 			def _backward():
-				self.grad+=out.grad*y
-				other.grad+=(out.grad.T*x).T
-				if other.grad.shape != other.shape:
-					other.grad = other.grad.T
+				self.grad+=out.grad*other.data
+				other.grad+=out.grad*self.data
+			out._backward = _backward
 		else:
-			out = Tensor(x.dot(y), (self,other), '*')
-
-			def _backward():
-				self.grad+=out.grad.dot(y)
-				#if self.grad.shape != self.shape:
-				#	self.grad = np.reshape(self.grad, self.shape)
-				other.grad+=out.grad.T.dot(x).T
-				if other.grad.shape != other.shape:
-					other.grad = other.grad.T
-				
-		out._backward=_backward
-
+			out = self.dot(other)
+			
 		return out
 	
 	def __pow__(self, other):
@@ -217,7 +221,7 @@ if __name__ == "__main__":
 	y = Tensor([[2, 0, -2]])
 	print(f'y data: \n{y.data}\n')
 	
-	m = y*x
+	m = x.dot(y)
 	print(f'm data: \n{m.data}]\n')
 	z = m.sum()
 	print(f'z data: \n{z.data}\n')
