@@ -10,8 +10,8 @@ def test_cross_entropy():
 
     cost_1 = cross_entropy(yHat_1, y)
     cost_2 = cross_entropy(yHat_2, y)
-    
-    assert cost_1 < cost_2
+
+    assert cost_1.data < cost_2.data
 
 def test_mean_squared_error():
     y = np.array([1,2,5])
@@ -21,7 +21,7 @@ def test_mean_squared_error():
     mse_1 = mean_squared_error(yHat_1, y)
     mse_2 = mean_squared_error(yHat_2, y)
 
-    assert mse_1 < mse_2
+    assert mse_1.data < mse_2.data
 
 def test_mean_absoulte_error():
     y = np.array([1,2,5])
@@ -31,5 +31,5 @@ def test_mean_absoulte_error():
     mse_1 = mean_absolute_error(yHat_1, y)
     mse_2 = mean_absolute_error(yHat_2, y)
 
-    assert mse_1 < mse_2
+    assert mse_1.data < mse_2.data
 
