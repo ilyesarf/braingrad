@@ -19,6 +19,20 @@ class Tensor():
 
 	def __repr__(self): 
 		return f"Tensor({self.data}, grad={self.grad})"
+	
+	_rng = np.random.default_rng()
+	
+	@staticmethod
+	def random(shape, **kwargs):
+		return Tensor(Tensor._rng.random(shape, **kwargs))
+	
+	@staticmethod
+	def uniform(shape, **kwargs):
+		return Tensor(Tensor._rng.uniform(shape, **kwargs))
+	
+	@staticmethod
+	def eye(shape, **kwargs):
+		return Tensor(np.eye(shape, **kwargs))
 
 	############ main ops ############
 	
@@ -186,11 +200,12 @@ class Tensor():
 		return out
 	
 	def logsoftmax(self):
-		def _logsoftmax(x):
-			exp_x = np.exp(x - np.max(x))
-			return np.log(exp_x / exp_x.sum())
+		def logsumexp(x):
+			c = x.max(axis=1)
+			logsumexp = np.log(np.exp(x - c.reshape((-1, 1))).sum(axis=1))
+			return c + logsumexp
 		
-		out = Tensor(_logsoftmax(self.data), (self,), 'softmax')
+		out = Tensor(self.data - logsumexp(self.data), (self,), 'softmax')
 
 		def _backward():
 			self.grad += out.grad - np.exp(out.data)*out.grad.sum(axis=1).reshape((-1, 1))
