@@ -4,16 +4,16 @@ import numpy as np
 import torch
 from engine import Tensor
 
-X = np.random.rand(3,3)
+X = Tensor.random((3,3))
 print(f'x data: \n{X}\n')
-Y = np.random.rand(1,3)
+Y = Tensor.random((1,3))
 print(f'y data: \n{Y}\n')
 
 def test_backward():
     def braingrad():
         print("\n\n******* BRAINGRAD *******\n\n")
-        x = Tensor(X)
-        y = Tensor(Y)
+        x = X
+        y = Y
 
         m = y.dot(x)
         
@@ -33,8 +33,8 @@ def test_backward():
     
     def pytorch():
         print("\n\n******* TORCH *******\n\n")
-        x = torch.tensor(X, requires_grad=True)
-        y = torch.tensor(Y, requires_grad=True)
+        x = torch.tensor(X.data, requires_grad=True)
+        y = torch.tensor(Y.data, requires_grad=True)
 
         m = y.matmul(x)
         
