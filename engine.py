@@ -6,7 +6,7 @@ class Tensor():
 			if isinstance(data, (int, float)):
 				data = [data]
 			data=np.array(data, dtype=np.float32)
-
+		
 		self.data=data
 		self.shape = self.data.shape
 		self.grad=0.0
@@ -27,8 +27,8 @@ class Tensor():
 		return Tensor(Tensor._rng.random(shape, **kwargs))
 	
 	@staticmethod
-	def uniform(shape, **kwargs):
-		return Tensor(Tensor._rng.uniform(shape, **kwargs))
+	def uniform(low, high, **kwargs):
+		return Tensor(Tensor._rng.uniform(low, high, **kwargs))
 	
 	@staticmethod
 	def eye(shape, **kwargs):
@@ -174,7 +174,7 @@ class Tensor():
 		out = Tensor(np.abs(self.data), (self,), 'abs')
 		def _backward():
 			self.grad = np.sign(out.data)
-		out._backward = _backward()
+		out._backward = _backward
 
 		return out
 	
