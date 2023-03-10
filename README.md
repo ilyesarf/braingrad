@@ -9,10 +9,12 @@ We aim to implement as many features as possible to make it capable of training 
 * Automatic differentiantion engine
 * Forward propagation
 * Some loss and activation functions
+* SGD optimizer
+
 ## TODO:
 * Creating sequential models
 * Documentation
-* Implement SGD optimizer
+
 
 ### Contributors:
 [Ilyes Arfaoui](https://github.com/Quimzy)
