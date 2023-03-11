@@ -19,7 +19,12 @@ class Tensor():
 
 	def __repr__(self): 
 		return f"Tensor({self.data}, grad={self.grad})"
-	
+
+	def astype(self, type):
+		self.data = self.data.astype(type)
+		
+	############ generators ############
+
 	_rng = np.random.default_rng()
 	
 	@staticmethod
