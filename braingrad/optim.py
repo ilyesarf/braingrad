@@ -6,5 +6,4 @@ class SGD:
 
     def step(self):
         for tensor in self.tensors:
-            #print(f"{'#'*8} layer {self.tensors.index(tensor)+1} grad {'#'*8}\n{self.lr * tensor.grad}\n")
             tensor.data -= self.lr * tensor.grad
