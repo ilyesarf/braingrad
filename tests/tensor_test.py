@@ -2,7 +2,7 @@ import sys
 sys.path.insert(1, '..')
 import numpy as np
 import torch
-from engine import Tensor
+from braingrad.engine import Tensor
 
 X = Tensor.random((3,3))
 print(f'x data: \n{X}\n')
@@ -22,19 +22,20 @@ def test_backward():
         v.backward()
 
         print(f'm data: \n{m.data}]\n')
-        z = m.sum()
+        z = m.mean()
         print(f'z data: \n{z.data}\n')
         z.backward()
 
         print(f'x grad: \n{x.grad}\n')  # dz/dx
         print(f'y grad: \n{y.grad}')  # dz/dy
-    
+
         return x.grad, y.grad
     
     def pytorch():
         print("\n\n******* TORCH *******\n\n")
-        x = torch.tensor(X.data, requires_grad=True)
-        y = torch.tensor(Y.data, requires_grad=True)
+
+        x = torch.tensor(X.data, requires_grad=True, dtype=torch.float64)
+        y = torch.tensor(Y.data, requires_grad=True, dtype=torch.float64)
 
         m = y.matmul(x)
         
@@ -43,7 +44,7 @@ def test_backward():
         v.backward()
 
         print(f'm data: \n{m.data}]\n')
-        z = m.sum()
+        z = m.mean()
         print(f'z data: \n{z.data}\n')
         z.backward()
 

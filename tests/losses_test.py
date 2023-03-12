@@ -1,7 +1,7 @@
 import sys
 sys.path.insert(1, '..')
 import numpy as np
-from losses import *
+from braingrad.losses import *
 
 def test_cross_entropy():
     y = np.array([0, 1, 0])
