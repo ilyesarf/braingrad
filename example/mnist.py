@@ -14,43 +14,43 @@ Y_train = fetch_mnist("http://yann.lecun.com/exdb/mnist/train-labels-idx1-ubyte.
 X_test = fetch_mnist("http://yann.lecun.com/exdb/mnist/t10k-images-idx3-ubyte.gz")[0x10:].reshape((-1, 28, 28))
 Y_test = fetch_mnist("http://yann.lecun.com/exdb/mnist/t10k-labels-idx1-ubyte.gz")[8:]
 
-# train a model
 
 def layer_init(m, h):
-  ret = (Tensor.uniform(-1., 1., size=(m,h))/np.sqrt(m*h)).astype(np.float32)
-  return ret
+    ret = (Tensor.uniform(-1., 1., size=(m,h))/np.sqrt(m*h)).astype(np.float32)
+    return ret
 
 class BrainNet:
-  def __init__(self):
-    self.l1 = layer_init(784, 128)
-    self.l2 = layer_init(128, 10)
+    def __init__(self):
+        self.l1 = layer_init(784, 128)
+        self.l2 = layer_init(128, 10)
 
-  def forward(self, x):
-    
-    return x.dot(self.l1).relu().dot(self.l2).logsoftmax()
+    def forward(self, x):
+        
+        return x.dot(self.l1).relu().dot(self.l2).logsoftmax()
 
 
+# train a model
 def train(model, optim, BS):
 
     for i in trange(1000):
       
-      samp = np.random.randint(0, X_train.shape[0], size=(BS))
-      x = Tensor(X_train[samp].reshape((-1, 28*28)))
-      # forward prop
-      outs = model.forward(x)
-
-      # labels
-      Y = Y_train[samp]
-      y = np.zeros((len(samp),10), np.float32)
-      y[range(y.shape[0]),Y] = -1.0
-      y = Tensor(y)
-
-      # NLL loss function
-      loss = outs.mul(y).mean()
-
-      optim.zero_grad()
-      loss.backward()
-      optim.step()
+        samp = np.random.randint(0, X_train.shape[0], size=(BS))
+        x = Tensor(X_train[samp].reshape((-1, 28*28)))
+        # forward prop
+        outs = model.forward(x)
+    
+        # labels
+        Y = Y_train[samp]
+        y = np.zeros((len(samp),10), np.float32)
+        y[range(y.shape[0]),Y] = -1.0
+        y = Tensor(y)
+    
+        # NLL loss function
+        loss = outs.mul(y).mean()
+    
+        optim.zero_grad()
+        loss.backward()
+        optim.step()
 
 
 if __name__ == '__main__':
