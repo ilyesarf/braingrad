@@ -12,6 +12,7 @@ We aim to implement as many features as possible to make it capable of training 
 * SGD optimizer
 
 ## TODO:
+* Refactor autograd
 * Creating sequential models
 * Documentation
 
