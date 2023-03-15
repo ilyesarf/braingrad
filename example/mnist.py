@@ -33,8 +33,8 @@ def layer_init(m, h):
 
 class BrainNet:
   def __init__(self):
-    self.l1 = Tensor(layer_init(784, 128))
-    self.l2 = Tensor(layer_init(128, 10))
+    self.l1 = layer_init(784, 128)
+    self.l2 = layer_init(128, 10)
 
   def forward(self, x):
     
@@ -47,6 +47,7 @@ optim = SGD([model.l1, model.l2])
 BS = 128
 
 for i in (t := trange(1000)):
+  
   samp = np.random.randint(0, X_train.shape[0], size=(BS))
   x = Tensor(X_train[samp].reshape((-1, 28*28)))
   # forward prop
@@ -57,14 +58,12 @@ for i in (t := trange(1000)):
   y = np.zeros((len(samp),10), np.float32)
   y[range(y.shape[0]),Y] = -1.0
   y = Tensor(y)
-  
+
   # NLL loss function
   loss = outs.mul(y).mean()
+  optim.zero_grad()
   loss.backward()
   optim.step()
-
-  #reset layers grads
-  model.l1.grad, model.l2.grad = (None, None)    
 
   # is it accurate?
   pred = np.argmax(outs.data, axis=1)
