@@ -24,6 +24,8 @@ class Tensor():
 	def astype(self, type):
 		self.data = self.data.astype(type)
 
+		return self
+
 	############ generators ############
 
 	_rng = np.random.default_rng()
