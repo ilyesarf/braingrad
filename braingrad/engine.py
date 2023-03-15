@@ -1,15 +1,15 @@
 import numpy as np
 
 class Tensor():
-	def __init__(self,data,_children=(), _op=''): 
+	def __init__(self,data,_children=(), _op='', requires_grad=True): 
 		if type(data).__module__ != np.__name__: # check if data is a numpy array
-			print("Hey")
 			if isinstance(data, (int, float)):
 				data = [data]
 			data=np.array(data, dtype=np.float32)
 		
 		self.data=data
 		self.shape = self.data.shape
+		self.requires_grad = requires_grad #not working
 		self.grad=None
 		self._backward=lambda: None
 
@@ -21,8 +21,8 @@ class Tensor():
 	def __repr__(self): 
 		return f"Tensor({self.data}, grad={self.grad})"
 
-	#def astype(self, type): #why is this not working?
-	#	self.data = self.data.astype(type)
+	def astype(self, type):
+		self.data = self.data.astype(type)
 
 	############ generators ############
 
@@ -235,11 +235,10 @@ class Tensor():
 		# topological order all of the children in the graph
 		topo = []
 		visited = set()
-		if self.grad == 0.0:
-			self.grad = np.ones_like(self.data)
+	
+		self.grad = np.ones_like(self.data)
 		def build_topo(v):
 			if v not in visited:
-				visited.add(v)
 				for child in v._prev:
 					build_topo(child)
 				topo.append(v)

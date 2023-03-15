@@ -27,8 +27,9 @@ Y_test = fetch("http://yann.lecun.com/exdb/mnist/t10k-labels-idx1-ubyte.gz")[8:]
 # train a model
 
 def layer_init(m, h):
-  ret = np.random.uniform(-1., 1., size=(m,h))/np.sqrt(m*h)
-  return ret.astype(np.float32)
+  ret = Tensor.uniform(-1., 1., size=(m,h))/np.sqrt(m*h)
+  ret.astype(np.float32)
+  return ret
 
 class BrainNet:
   def __init__(self):
