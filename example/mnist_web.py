@@ -50,4 +50,4 @@ def random():
 if __name__ == '__main__':
 
     train(model, optim, BS=128)
-    app.run(debug=True)
+    app.run(host='0.0.0.0', debug=True)
