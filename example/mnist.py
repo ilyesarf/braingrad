@@ -16,8 +16,8 @@ Y_test = fetch_mnist("http://yann.lecun.com/exdb/mnist/t10k-labels-idx1-ubyte.gz
 
 
 def layer_init(m, h):
-    ret = (Tensor.uniform(-1., 1., size=(m,h))/np.sqrt(m*h)).astype(np.float32)
-    return ret
+    ret = np.random.uniform(-1., 1., size=(m,h))/np.sqrt(m*h)
+    return Tensor(ret).astype(np.float32)
 
 class BrainNet:
     def __init__(self):
@@ -25,9 +25,7 @@ class BrainNet:
         self.l2 = layer_init(128, 10)
 
     def forward(self, x):
-        
         return x.dot(self.l1).relu().dot(self.l2).logsoftmax()
-
 
 # train a model
 def train(model, optim, BS):
@@ -44,7 +42,7 @@ def train(model, optim, BS):
         y = np.zeros((len(samp),10), np.float32)
         y[range(y.shape[0]),Y] = -1.0
         y = Tensor(y)
-    
+        
         # NLL loss function
         loss = outs.mul(y).mean()
     

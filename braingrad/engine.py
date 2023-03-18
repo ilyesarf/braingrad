@@ -6,7 +6,7 @@ class Tensor():
 			if isinstance(data, (int, float)):
 				data = [data]
 			data=np.array(data, dtype=np.float32)
-		
+
 		self.data=data
 		self.shape = self.data.shape
 		self.requires_grad = requires_grad #not working
@@ -32,15 +32,15 @@ class Tensor():
 	
 	@staticmethod
 	def random(shape, **kwargs):
-		return Tensor(Tensor._rng.random(shape, **kwargs))
+		return Tensor(Tensor._rng.random(shape, **kwargs), _op='gen')
 	
 	@staticmethod
 	def uniform(low, high, **kwargs):
-		return Tensor(Tensor._rng.uniform(low, high, **kwargs))
+		return Tensor(Tensor._rng.uniform(low, high, **kwargs), _op='gen')
 	
 	@staticmethod
 	def eye(shape, **kwargs):
-		return Tensor(np.eye(shape, **kwargs))
+		return Tensor(np.eye(shape, **kwargs), _op='gen')
 
 	############ main ops ############
 	
@@ -55,9 +55,11 @@ class Tensor():
 		"""
 		other = other if isinstance(other, Tensor) else Tensor(other)
 		out = Tensor(self.data+other.data, (self,other), '+')
-		def _backward():
-			self.grad = 1.0*out.grad # chain rule
-			other.grad = 1.0*out.grad
+		def _backward(): 
+			x_grad = 1.0*out.grad # chain rule
+			y_grad = 1.0*out.grad
+			return x_grad, y_grad
+
 		out._backward=_backward
 
 		return out
@@ -65,12 +67,13 @@ class Tensor():
 	def dot(self, other):
 		other = other if isinstance(other, Tensor) else Tensor(other)	
 		
-		out = Tensor(self.data.dot(other.data), (self,other), 'dot')
+		out = Tensor(self.data.dot(other.data), (other,self), 'dot')
 
 		def _backward():
-			self.grad = out.grad.dot(other.data.T) if self.grad is None else (self.grad + out.grad.dot(other.data.T))
-			other.grad = out.grad.T.dot(self.data).T if other.grad is None else (other.grad + out.grad.T.dot(self.data).T)
-			
+			x_grad = out.grad.dot(other.data.T)
+			y_grad = out.grad.T.dot(self.data).T
+			return x_grad, y_grad
+
 		out._backward = _backward
 
 		return out
@@ -79,8 +82,10 @@ class Tensor():
 		other = other if isinstance(other, Tensor) else Tensor(other)	
 		out = Tensor(self.data*other.data, (self,other), '*')
 		def _backward():
-			self.grad=out.grad*other.data
-			other.grad=out.grad*self.data
+			x_grad=out.grad*other.data
+			y_grad=out.grad*self.data
+			return x_grad, y_grad
+
 		out._backward = _backward
 
 		return out
@@ -118,7 +123,8 @@ class Tensor():
 		out = Tensor(self.data**other, (self,), f'**{other}')		
 
 		def _backward():
-			self.grad =  (other * self.data**(other-1)) * out.grad
+			x_grad =  (other * self.data**(other-1)) * out.grad
+			return x_grad
 		out._backward = _backward
 
 		return out
@@ -154,7 +160,8 @@ class Tensor():
 	def log(self):
 		out = Tensor(np.log(self.data), (self,), 'log')
 		def _backward():
-			self.grad = 1/self.data
+			x_grad = 1/self.data
+			return x_grad
 		out._backward = _backward
 
 		return out
@@ -162,7 +169,8 @@ class Tensor():
 	def mean(self):
 		out = Tensor(self.data.mean(), (self,), 'mean')
 		def _backward():
-			self.grad = np.full_like(self.data, 1/self.data.size)
+			x_grad = np.full_like(self.data, 1/self.data.size)
+			return x_grad
 		out._backward = _backward
 
 		return out
@@ -170,7 +178,8 @@ class Tensor():
 	def sum(self):
 		out = Tensor(np.sum(self.data), (self,), 'sum')
 		def _backward():
-			self.grad = np.ones_like(self.data)
+			x_grad = np.ones_like(self.data)
+			return x_grad
 		out._backward = _backward
 
 		return out
@@ -178,7 +187,8 @@ class Tensor():
 	def abs(self):
 		out = Tensor(np.abs(self.data), (self,), 'abs')
 		def _backward():
-			self.grad = np.sign(out.data)
+			x_grad = np.sign(out.data)
+			return x_grad
 		out._backward = _backward
 
 		return out
@@ -188,9 +198,10 @@ class Tensor():
 	def relu(self):
 		out = Tensor(np.maximum(0, self.data), (self,), 'relu')
 		def _backward():
-			grad = out.grad.copy()
-			grad[self.data < 0] = 0
-			self.grad = grad
+			x_grad = out.grad.copy()
+			#print(x_grad.shape)
+			x_grad[self.data <= 0] = 0
+			return x_grad
 		out._backward = _backward
 
 		return out
@@ -201,11 +212,12 @@ class Tensor():
 		out = Tensor(_sigmoid(self.data), (self,), 'sigmoid')
 		
 		def _backward():
-			self.grad = out.grad * (1-out.data)
+			x_grad = out.grad * (1-out.data)
+			return x_grad
 		out._backward = _backward
 
 		return out
-	
+
 	def logsoftmax(self):
 		def logsumexp(x):
 			c = x.max(axis=1)
@@ -215,7 +227,8 @@ class Tensor():
 		out = Tensor(self.data - logsumexp(self.data), (self,), 'softmax')
 
 		def _backward():
-			self.grad = out.grad - np.exp(out.data)*out.grad.sum(axis=1).reshape((-1, 1))
+			x_grad = out.grad - np.exp(out.data)*out.grad.sum(axis=1).reshape((-1, 1))
+			return x_grad
 		out._backward = _backward
 
 		return out
@@ -226,27 +239,39 @@ class Tensor():
 		out=Tensor(_tanh(self.data),(self,), 'tanh')
 
 		def _backward():
-			self.grad=(1-out.data**2)*out.grad  # tanh' = 1/cosh^2= 1-tanh^2
+			x_grad=(1-out.data**2)*out.grad  # tanh' = 1/cosh^2= 1-tanh^2
+			return x_grad
 		out._backward=_backward
 
 		return out
 	
 	#backward
+	
 	def backward(self):
 		assert len(self.shape) == 0, "grad can only be created for scalar outputs"
 		# topological order all of the children in the graph
 		topo = []
 		visited = set()
 	
-		self.grad = np.ones_like(self.data)
 		def build_topo(v):
-			if v not in visited:
+			visited.add(v)
+			if len(v._prev) > 0:
 				for child in v._prev:
-					build_topo(child)
+					if child not in visited:
+						build_topo(child)
+						
 				topo.append(v)
+			
 		build_topo(self)
-		# go one variable at a time and apply the chain rule to get its gradient
+		print(len(topo) == 6)
+		print([i.shape for v in reversed(topo) for i in v._prev])
+		
+		self.grad = np.ones_like(self.data)
 		for v in reversed(topo):
-			v._backward()
-
+			grads = v._backward() if len(v._prev) > 1 else [v._backward()]
+			for t, g in zip(v._prev, grads):
+				print(f"{t.shape} -> {g.shape}")
+				assert t.shape == g.shape, f"{t.shape} != {g.shape}"
+				if g is not None and t.requires_grad:
+					t.grad = g if t.grad is None else (t.grad + g)
 
