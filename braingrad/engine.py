@@ -248,6 +248,9 @@ class Tensor():
 	#backward
 	
 	def backward(self):
+		"""
+		Works when you edit something (whatever it is), then it doesn't work. WHY????
+		"""
 		assert len(self.shape) == 0, "grad can only be created for scalar outputs"
 		# topological order all of the children in the graph
 		topo = []
@@ -265,7 +268,7 @@ class Tensor():
 		build_topo(self)
 		print(len(topo) == 6)
 		print([i.shape for v in reversed(topo) for i in v._prev])
-		
+
 		self.grad = np.ones_like(self.data)
 		for v in reversed(topo):
 			grads = v._backward() if len(v._prev) > 1 else [v._backward()]
