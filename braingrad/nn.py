@@ -1,18 +1,20 @@
 import random
-from engine import Tensor
+import numpy as np
+from braingrad.engine import Tensor
 class Unit():  # unit = neuron
     def __init__(self, nin):
         self.w = Tensor([random.uniform(-1,1) for dummy in range(nin)])  # weights
         self.b = Tensor(random.uniform(-1,1))  # bias
     def __call__(self, x):
         # W@x + b,  @ is dot product
-        return self.w.dot(x) + self.b
+        res=self.w.dot(x) + self.b
+        return res
 class Layer():
     def __init__(self, nin, nout, act):
         self.units = [Unit(nin) for dummy in range(nout)]
         self.act = act
     def __call__(self, x):
-        return Tensor([self.act(unit(x)).data for unit in self.units])
+        return Tensor(np.array([self.act(unit(x)).data for unit in self.units]).squeeze())
 class MLP():
     def __init__(self, nin, nouts, acts):
         nouts=[nin]+nouts
