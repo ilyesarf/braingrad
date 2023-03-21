@@ -15,7 +15,7 @@ class Tensor():
 
 		# Keep count of children, aka past tensors we did operations on to get our
 		# current tensor to help us implement backward prop
-		self._prev=set(_children)   
+		self._prev=set(_children)
 		self._op=_op
 
 	def __repr__(self): 
@@ -67,11 +67,13 @@ class Tensor():
 	def dot(self, other):
 		other = other if isinstance(other, Tensor) else Tensor(other)	
 		
-		out = Tensor(self.data.dot(other.data), (other,self), 'dot')
+		out = Tensor(self.data.dot(other.data), _children=(self,other), _op='dot')
 
+		print(f"tensor shapes {[i.shape for i in out._prev]}")
 		def _backward():
 			x_grad = out.grad.dot(other.data.T)
 			y_grad = out.grad.T.dot(self.data).T
+			print(f"grad shapes {[i.shape for i in (x_grad, y_grad)]}")
 			return x_grad, y_grad
 
 		out._backward = _backward
