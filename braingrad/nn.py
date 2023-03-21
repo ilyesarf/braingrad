@@ -23,9 +23,10 @@ class MLP():
         for layer in self.layers:
             x = layer(x)
         return x
-x=[2.0,3.6]
-u1=Unit(2)
-l=Layer(2,3,lambda x: x)
-m=MLP(2,[3,2],[lambda x: x, lambda x: x])
-print(m(x))
+if __name__ == "__main__":
+    x=[2.0,3.6]
+    u1=Unit(2)
+    l=Layer(2,3,lambda x: x)
+    m=MLP(2,[3,2],[lambda x: x, lambda x: x])
+    print(m(x))
 

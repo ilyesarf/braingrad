@@ -196,7 +196,7 @@ class Tensor():
 		return out
 	
 	############ activations ############
-	
+
 	def relu(self):
 		out = Tensor(np.maximum(0, self.data), (self,), 'relu')
 		def _backward():
@@ -244,6 +244,16 @@ class Tensor():
 			x_grad=(1-out.data**2)*out.grad  # tanh' = 1/cosh^2= 1-tanh^2
 			return x_grad
 		out._backward=_backward
+
+		return out
+	
+	def linear(self):
+		out = Tensor(self.data, (self,), 'linear')
+
+		def _backward():
+			x_grad = self.grad
+			return x_grad
+		out._backward = _backward
 
 		return out
 	
