@@ -279,8 +279,8 @@ class Tensor():
 			
 		build_topo(self)
 		print(len(topo) == 6)
-		print([i.shape for v in reversed(topo) for i in v._prev])
-
+		print([(i.shape, i._op) for v in reversed(topo) for i in v._prev])
+		
 		self.grad = np.ones_like(self.data)
 		for v in reversed(topo):
 			grads = v._backward() if len(v._prev) > 1 else [v._backward()]

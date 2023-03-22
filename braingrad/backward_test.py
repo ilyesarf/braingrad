@@ -24,8 +24,7 @@ def test_braingrad():
   outx.backward()
   optim.step()
 
-for i in range(3):
-    test_braingrad()
+test_braingrad()
 """
 def test_pytorch():
   x = torch.tensor(x_init, requires_grad=True)
